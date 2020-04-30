@@ -1,0 +1,38 @@
+@font-face {
+    font-family: TCM;
+    src: url(TCM_____.TTF);
+}
+
+body {
+    background-color: rgb(255, 233, 243);
+    color: rgb(68, 0, 68);
+    font-family: TCM;
+}
+
+h1 {
+    font-size: xx-large;
+    font-weight: bold;
+    text-align: center;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.row img {
+    margin: 10px;
+    width: 20%;
+}
+
+.wrapper {
+    position:relative;
+}
+
+canvas {
+    position:absolute;
+    top:0px;
+    left:0px;
+}
