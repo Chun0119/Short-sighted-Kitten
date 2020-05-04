@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Short-sighted Kitten</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+  </head>
+
+  <body>
+    <h1>Short-sighted Kitten</h1>
+    <div class="column">
+      <div class="row">
+        <img src="/static/cat.png" />
+        <img src="/static/cat-with-eyeglasses.png" />
+        <img src="/static/cat-with-speech-bubble.png" />
+      </div>
+      <div class="row">
+        <form id="form">
+          <input id="file" name="file" type="file" multiple />
+          <p>Drag your files here or click in this area.</p>
+        </form>
+      </div>
+      <div class="row">
+        <div class="preview">
+          <img src="" id="img" />
+        </div>
+        <div class="wrapper">
+          <canvas id="canvasCat" style="z-index: 1;"></canvas>
+          <canvas id="canvasEyeglasses" style="z-index: 2;"></canvas>
+          <canvas id="canvasBubble" style="z-index: 3;"></canvas>
+          <canvas id="canvasText" style="z-index: 4;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("form").onchange = (e) => {
+        const form = document.getElementById("form");
+        const formData = new FormData(form);
+        fetch("/detect", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (!data.success) throw new Error(data.error);
+            else return data;
+          })
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((err) => alert(err.message));
+      };
+
+      document.getElementById("file").onchange = function () {
+        document.querySelector("form p").innerHTML =
+          this.files.length + " file(s) selected";
+        previewOriginalImage(this);
+
+        // Try two images
+
+        drawNewImage("/static/temp.jpg");
+        setTimeout(drawAugmentedEffect, 100, 115, 122, 179, 121, 133, 169);
+
+        //drawNewImage('/static/temp2.jpg');
+        //setTimeout(drawAugmentedEffect, 100, 263, 433, 379, 286, 418, 466);
+      };
+
+      function previewOriginalImage(input) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          // get loaded data and render thumbnail.
+          document.getElementById("img").src = e.target.result;
+        };
+        // read the image file as a data URL.
+        reader.readAsDataURL(input.files[0]);
+      }
+
+      const canvasCat = document.getElementById("canvasCat");
+      const canvasEyeglasses = document.getElementById("canvasEyeglasses");
+      const canvasBubble = document.getElementById("canvasBubble");
+      const canvasText = document.getElementById("canvasText");
+
+      function drawNewImage(imgSrc) {
+        // Draw cat image
+        const cat = new Image();
+        cat.onload = function () {
+          canvasCat.width = cat.width;
+          canvasCat.height = cat.height;
+          canvasEyeglasses.width = cat.width;
+          canvasEyeglasses.height = cat.height;
+          canvasBubble.width = cat.width;
+          canvasBubble.height = cat.height;
+          canvasText.width = cat.width;
+          canvasText.height = cat.height;
+
+          const ctx = canvasCat.getContext("2d");
+          ctx.drawImage(cat, 0, 0, cat.width, cat.height);
+        };
+        cat.src = imgSrc;
+      }
+
+      function drawAugmentedEffect(
+        leftEyeX,
+        leftEyeY,
+        rightEyeX,
+        rightEyeY,
+        mouthX,
+        mouthY
+      ) {
+        eyeCenterX = (leftEyeX + rightEyeX) / 2;
+        eyeCenterY = (leftEyeY + rightEyeY) / 2;
+
+        rotation = Math.atan2(rightEyeY - leftEyeY, rightEyeX - leftEyeX);
+
+        // Draw eyeglasses
+        const eyeglasses = new Image();
+        eyeglasses.onload = function () {
+          scale =
+            Math.hypot(leftEyeX - rightEyeX, leftEyeY - rightEyeY) /
+            (eyeglasses.width / 2);
+
+          width = eyeglasses.width * scale;
+          height = eyeglasses.height * scale;
+
+          const ctx = canvasEyeglasses.getContext("2d");
+          ctx.translate(eyeCenterX, eyeCenterY);
+          ctx.rotate(rotation);
+          ctx.drawImage(eyeglasses, -width / 2, -height / 2, width, height);
+        };
+        eyeglasses.src = "/static/eyeglasses.png";
+
+        // Draw speech bubble
+        const bubble = new Image();
+        bubble.onload = function () {
+          scale =
+            Math.hypot(eyeCenterX - mouthX, eyeCenterY - mouthY) /
+            (bubble.height / 2);
+
+          width = bubble.width * scale;
+          height = bubble.height * scale;
+
+          ctxScaleX = leftEyeX < rightEyeX ? -1 : 1;
+
+          const ctxBubble = canvasBubble.getContext("2d");
+          ctxBubble.translate(mouthX, mouthY);
+          ctxBubble.scale(ctxScaleX, 1);
+          //ctx.rotate(rotation);
+          ctxBubble.drawImage(bubble, -width, 0, width, height);
+
+          // Draw text in bubble
+          const ctxText = canvasText.getContext("2d");
+          ctxText.translate(mouthX, mouthY);
+          ctxText.font = "30px Comic Sans MS";
+          ctxText.textAlign = "center";
+          ctxText.fillText("Meow", width / 2, height / 2);
+        };
+        bubble.src = "/static/bubble.png";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+# Web Server
+
+fastapi~=0.54
+uvicorn~=0.11
+aiofiles~=0.5
+python-multipart~=0.0.5
+
+# Machine Learning
+tensorflow~=2.0
