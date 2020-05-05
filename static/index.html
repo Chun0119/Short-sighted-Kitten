@@ -34,8 +34,16 @@
     </div>
 
     <script>
-      document.getElementById("form").onchange = (e) => {
+      document.getElementById("form").onchange = () => {
         const form = document.getElementById("form");
+        const input = form.querySelector("input#file");
+
+        const message = form.querySelector("p");
+        message.innerHTML = input.files.length + " file(s) selected";
+
+        // TODO: reject formats other than bmp, jpg, png, gif
+        previewOriginalImage(input);
+
         const formData = new FormData(form);
         fetch("/detect", {
           method: "POST",
@@ -46,31 +54,26 @@
             if (!data.success) throw new Error(data.error);
             else return data;
           })
-          .then((data) => {
-            console.log(data);
+          .then(({ landmarks }) => {
+            // TODO: handle no cats detected
+            readOriginalImage(input, (url) => {
+              drawNewImage(url, landmarks);
+            });
           })
           .catch((err) => alert(err.message));
       };
 
-      document.getElementById("file").onchange = function () {
-        document.querySelector("form p").innerHTML =
-          this.files.length + " file(s) selected";
-        previewOriginalImage(this);
-
-        // Try two images
-
-        drawNewImage("/static/temp.jpg");
-        setTimeout(drawAugmentedEffect, 100, 115, 122, 179, 121, 133, 169);
-
-        //drawNewImage('/static/temp2.jpg');
-        //setTimeout(drawAugmentedEffect, 100, 263, 433, 379, 286, 418, 466);
-      };
-
+      // get loaded data and render thumbnail.
       function previewOriginalImage(input) {
+        readOriginalImage(input, (url) => {
+          document.getElementById("img").src = url;
+        });
+      }
+
+      function readOriginalImage(input, callback) {
         const reader = new FileReader();
-        reader.onload = function (e) {
-          // get loaded data and render thumbnail.
-          document.getElementById("img").src = e.target.result;
+        reader.onload = (e) => {
+          callback(e.target.result);
         };
         // read the image file as a data URL.
         reader.readAsDataURL(input.files[0]);
@@ -81,7 +84,7 @@
       const canvasBubble = document.getElementById("canvasBubble");
       const canvasText = document.getElementById("canvasText");
 
-      function drawNewImage(imgSrc) {
+      function drawNewImage(imgSrc, landmarks) {
         // Draw cat image
         const cat = new Image();
         cat.onload = function () {
@@ -96,6 +99,9 @@
 
           const ctx = canvasCat.getContext("2d");
           ctx.drawImage(cat, 0, 0, cat.width, cat.height);
+
+          // TODO: handle multiple landmarks
+          drawAugmentedEffect(...landmarks[0]);
         };
         cat.src = imgSrc;
       }
