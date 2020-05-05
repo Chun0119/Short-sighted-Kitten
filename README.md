@@ -4,20 +4,22 @@ Short-Sighted Kitten is an exploration of facial landmarks detection model on ca
 
 ## Setup
 
-1. Install Python 3.6+, preferably via [Anaconda](https://www.anaconda.com/):
+1. A GPU instance is recommended as the model loading and inference time may be slow on CPU.
+
+2. Install Python 3.6+, preferably via [Anaconda](https://www.anaconda.com/):
 
 ```shell
 $ python --version
 Python 3.7.6
 ```
 
-2. Install dependencies:
+3. Install dependencies:
 
 ```shell
 $ pip install -r requirements.txt
 ```
 
-3. Download and extracts [pretrained models](https://drive.google.com/file/d/1ncrxIyUBps_5_iCnYRmRlutCAXrGm4lk/view?usp=sharing) in the project folder:
+4. Download and extracts [pretrained models](https://drive.google.com/file/d/1ncrxIyUBps_5_iCnYRmRlutCAXrGm4lk/view?usp=sharing) in the project folder:
 
 ```shell
 $ tree -L 2
@@ -28,7 +30,7 @@ $ tree -L 2
 ...
 ```
 
-4. Launch web server:
+5. Launch web server:
 
 ```shell
 $ uvicorn main:app

@@ -4,164 +4,154 @@
     <meta charset="utf-8" />
     <title>Short-sighted Kitten</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <link rel="stylesheet" type="text/css" href="/static/dropzone.min.css" />
   </head>
 
   <body>
     <h1>Short-sighted Kitten</h1>
-    <div class="column">
-      <div class="row">
-        <img src="/static/cat.png" />
-        <img src="/static/cat-with-eyeglasses.png" />
-        <img src="/static/cat-with-speech-bubble.png" />
-      </div>
-      <div class="row">
-        <form id="form">
-          <input id="file" name="file" type="file" multiple />
-          <p>Drag your files here or click in this area.</p>
-        </form>
-      </div>
-      <div class="row">
-        <div class="preview">
-          <img src="" id="img" />
-        </div>
-        <div class="wrapper">
-          <canvas id="canvasCat" style="z-index: 1;"></canvas>
-          <canvas id="canvasEyeglasses" style="z-index: 2;"></canvas>
-          <canvas id="canvasBubble" style="z-index: 3;"></canvas>
-          <canvas id="canvasText" style="z-index: 4;"></canvas>
-        </div>
-      </div>
+
+    <div class="row">
+      <img src="/static/cat.png" />
+      <img src="/static/cat-with-eyeglasses.png" />
+      <img src="/static/cat-with-speech-bubble.png" />
     </div>
 
+    <form id="form" class="dropzone"></form>
+
+    <canvas id="cat"></canvas>
+    <button id="download">Download</button>
+
+    <div style="display: none;">
+      <img id="eyeglasses" src="/static/eyeglasses.png" />
+      <img id="bubble" src="/static/bubble.png" />
+    </div>
+
+    <script src="/static/dropzone.min.js"></script>
+    <script src="/static/fabric.min.js"></script>
+
     <script>
-      document.getElementById("form").onchange = () => {
-        const form = document.getElementById("form");
-        const input = form.querySelector("input#file");
+      Dropzone.autoDiscover = false;
+      const dropzone = new Dropzone("#form", {
+        url: "/detect",
+        paramName: "file",
+        acceptedFiles: "image/jpeg,image/png,image/gif,image/bmp",
+      });
 
-        const message = form.querySelector("p");
-        message.innerHTML = input.files.length + " file(s) selected";
+      dropzone.on("success", (e, data) => {
+        if (data.success) {
+          // TODO: handle empty landmarks
+          drawCat(e.dataURL, e.name, data.landmarks);
+        } else {
+          alert(data.error);
+        }
+      });
 
-        // TODO: reject formats other than bmp, jpg, png, gif
-        previewOriginalImage(input);
+      function drawCat(url, filename, landmarks) {
+        const canvas = new fabric.Canvas("cat");
 
-        const formData = new FormData(form);
-        fetch("/detect", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (!data.success) throw new Error(data.error);
-            else return data;
-          })
-          .then(({ landmarks }) => {
-            // TODO: handle no cats detected
-            readOriginalImage(input, (url) => {
-              drawNewImage(url, landmarks);
-            });
-          })
-          .catch((err) => alert(err.message));
-      };
+        fabric.Image.fromURL(url, (img) => {
+          const { width, height } = img.getOriginalSize();
+          canvas.setWidth(width);
+          canvas.setHeight(height);
+          canvas.setBackgroundImage(img);
 
-      // get loaded data and render thumbnail.
-      function previewOriginalImage(input) {
-        readOriginalImage(input, (url) => {
-          document.getElementById("img").src = url;
+          for (landmark of landmarks) {
+            drawEyeglasses(canvas, landmark);
+            drawBubble(canvas, landmark);
+          }
+        });
+
+        const button = document.getElementById("download");
+        button.addEventListener("click", () => {
+          const url = canvas.toDataURL({
+            format: "jpeg",
+          });
+
+          const link = document.createElement("a");
+          link.download = filename;
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         });
       }
 
-      function readOriginalImage(input, callback) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          callback(e.target.result);
-        };
-        // read the image file as a data URL.
-        reader.readAsDataURL(input.files[0]);
+      function drawEyeglasses(canvas, landmarks) {
+        const [
+          leftEyeX,
+          leftEyeY,
+          rightEyeX,
+          rightEyeY,
+          mouthX,
+          mouthY,
+        ] = landmarks;
+        const imgElem = document.getElementById("eyeglasses");
+
+        const eyeCenterX = (leftEyeX + rightEyeX) / 2;
+        const eyeCenterY = (leftEyeY + rightEyeY) / 2;
+
+        const angle =
+          (Math.atan2(rightEyeY - leftEyeY, rightEyeX - leftEyeX) / Math.PI) *
+          180;
+
+        const scale =
+          Math.hypot(leftEyeX - rightEyeX, leftEyeY - rightEyeY) /
+          (imgElem.width / 2);
+
+        const width = imgElem.width * scale;
+        const height = imgElem.height * scale;
+
+        const img = new fabric.Image(imgElem, {
+          left: eyeCenterX,
+          top: eyeCenterY,
+          originX: "center",
+          originY: "center",
+        })
+          .scaleToWidth(width)
+          .scaleToHeight(height)
+          .rotate(angle);
+        canvas.add(img);
       }
 
-      const canvasCat = document.getElementById("canvasCat");
-      const canvasEyeglasses = document.getElementById("canvasEyeglasses");
-      const canvasBubble = document.getElementById("canvasBubble");
-      const canvasText = document.getElementById("canvasText");
+      function drawBubble(canvas, landmarks) {
+        const [
+          leftEyeX,
+          leftEyeY,
+          rightEyeX,
+          rightEyeY,
+          mouthX,
+          mouthY,
+        ] = landmarks;
+        const imgElem = document.getElementById("bubble");
 
-      function drawNewImage(imgSrc, landmarks) {
-        // Draw cat image
-        const cat = new Image();
-        cat.onload = function () {
-          canvasCat.width = cat.width;
-          canvasCat.height = cat.height;
-          canvasEyeglasses.width = cat.width;
-          canvasEyeglasses.height = cat.height;
-          canvasBubble.width = cat.width;
-          canvasBubble.height = cat.height;
-          canvasText.width = cat.width;
-          canvasText.height = cat.height;
+        const eyeCenterX = (leftEyeX + rightEyeX) / 2;
+        const eyeCenterY = (leftEyeY + rightEyeY) / 2;
 
-          const ctx = canvasCat.getContext("2d");
-          ctx.drawImage(cat, 0, 0, cat.width, cat.height);
+        const scale =
+          Math.hypot(eyeCenterX - mouthX, eyeCenterY - mouthY) /
+          (imgElem.height / 2);
 
-          // TODO: handle multiple landmarks
-          drawAugmentedEffect(...landmarks[0]);
-        };
-        cat.src = imgSrc;
-      }
+        const width = imgElem.width * scale;
+        const height = imgElem.height * scale;
 
-      function drawAugmentedEffect(
-        leftEyeX,
-        leftEyeY,
-        rightEyeX,
-        rightEyeY,
-        mouthX,
-        mouthY
-      ) {
-        eyeCenterX = (leftEyeX + rightEyeX) / 2;
-        eyeCenterY = (leftEyeY + rightEyeY) / 2;
+        const img = new fabric.Image(imgElem, {
+          left: mouthX,
+          top: mouthY,
+          flipX: leftEyeX < rightEyeX,
+        })
+          .scaleToWidth(width)
+          .scaleToHeight(height);
+        canvas.add(img);
 
-        rotation = Math.atan2(rightEyeY - leftEyeY, rightEyeX - leftEyeX);
-
-        // Draw eyeglasses
-        const eyeglasses = new Image();
-        eyeglasses.onload = function () {
-          scale =
-            Math.hypot(leftEyeX - rightEyeX, leftEyeY - rightEyeY) /
-            (eyeglasses.width / 2);
-
-          width = eyeglasses.width * scale;
-          height = eyeglasses.height * scale;
-
-          const ctx = canvasEyeglasses.getContext("2d");
-          ctx.translate(eyeCenterX, eyeCenterY);
-          ctx.rotate(rotation);
-          ctx.drawImage(eyeglasses, -width / 2, -height / 2, width, height);
-        };
-        eyeglasses.src = "/static/eyeglasses.png";
-
-        // Draw speech bubble
-        const bubble = new Image();
-        bubble.onload = function () {
-          scale =
-            Math.hypot(eyeCenterX - mouthX, eyeCenterY - mouthY) /
-            (bubble.height / 2);
-
-          width = bubble.width * scale;
-          height = bubble.height * scale;
-
-          ctxScaleX = leftEyeX < rightEyeX ? -1 : 1;
-
-          const ctxBubble = canvasBubble.getContext("2d");
-          ctxBubble.translate(mouthX, mouthY);
-          ctxBubble.scale(ctxScaleX, 1);
-          //ctx.rotate(rotation);
-          ctxBubble.drawImage(bubble, -width, 0, width, height);
-
-          // Draw text in bubble
-          const ctxText = canvasText.getContext("2d");
-          ctxText.translate(mouthX, mouthY);
-          ctxText.font = "30px Comic Sans MS";
-          ctxText.textAlign = "center";
-          ctxText.fillText("Meow", width / 2, height / 2);
-        };
-        bubble.src = "/static/bubble.png";
+        const text = new fabric.Text("Meow", {
+          fontFamily: "Comic Sans MS",
+          fontSize: 30,
+          left: mouthX + width / 2,
+          top: mouthY + height / 2,
+          originX: "center",
+          originY: "center",
+        });
+        canvas.add(text);
       }
     </script>
   </body>
