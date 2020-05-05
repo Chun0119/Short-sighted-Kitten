@@ -18,8 +18,7 @@
 
     <form id="form" class="dropzone"></form>
 
-    <canvas id="cat"></canvas>
-    <button id="download">Download</button>
+    <div id="cats"></div>
 
     <div style="display: none;">
       <img id="eyeglasses" src="/static/eyeglasses.png" />
@@ -39,15 +38,25 @@
 
       dropzone.on("success", (e, data) => {
         if (data.success) {
-          // TODO: handle empty landmarks
-          drawCat(e.dataURL, e.name, data.landmarks);
+          if (data.landmarks.length > 0) {
+            drawCat(e.dataURL, e.name, data.landmarks);
+          } else {
+            alert("No cat detected :O");
+          }
         } else {
           alert(data.error);
         }
       });
 
       function drawCat(url, filename, landmarks) {
-        const canvas = new fabric.Canvas("cat");
+        const container = document.getElementById("cats");
+        const cat = document.createElement("div");
+        cat.className = "cat";
+        container.prepend(cat);
+
+        const canvasElem = document.createElement("canvas");
+        cat.appendChild(canvasElem);
+        const canvas = new fabric.Canvas(canvasElem);
 
         fabric.Image.fromURL(url, (img) => {
           const { width, height } = img.getOriginalSize();
@@ -61,7 +70,9 @@
           }
         });
 
-        const button = document.getElementById("download");
+        const button = document.createElement("button");
+        button.innerHTML = "Download";
+        cat.appendChild(button);
         button.addEventListener("click", () => {
           const url = canvas.toDataURL({
             format: "jpeg",
@@ -144,7 +155,7 @@
         canvas.add(img);
 
         const text = new fabric.Text("Meow", {
-          fontFamily: "Comic Sans MS",
+          fontFamily: "TCM",
           fontSize: 30,
           left: mouthX + width / 2,
           top: mouthY + height / 2,

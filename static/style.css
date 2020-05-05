@@ -1,6 +1,6 @@
 @font-face {
   font-family: TCM;
-  src: url(TCM_____.TTF);
+  src: url("/static/TCM.TTF");
 }
 
 body {
@@ -25,4 +25,11 @@ h1 {
 .row img {
   margin: 10px;
   width: 20%;
+}
+
+#cats .cat button {
+  border: none;
+  background: white;
+  color: tomato;
+  cursor: pointer;
 }
