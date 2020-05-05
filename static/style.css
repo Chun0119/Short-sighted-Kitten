@@ -4,13 +4,14 @@
 }
 
 body {
+  background-image: url("/static/background.png");
   background-color: rgb(255, 233, 243);
   color: rgb(68, 0, 68);
   font-family: TCM;
 }
 
 h1 {
-  font-size: xx-large;
+  font-size: 80px;
   font-weight: bold;
   text-align: center;
 }
@@ -24,12 +25,41 @@ h1 {
 
 .row img {
   margin: 10px;
-  width: 20%;
+  width: 10%;
+}
+
+#form {
+  display: block;
+  margin: 30px auto 30px auto;
+  width: 50%;
+  background-color: transparent;
+  border-style: dashed;
+  border-color: rgb(95, 0, 107);
+  border-width: 3px;
+  border-radius: 5px;
+}
+
+#form button {
+  color: rgb(68, 0, 68);
+  font-size: xx-large;
+}
+
+#form .dz-preview.dz-image-preview {
+  background-color: transparent;
+}
+
+#cats .cat .canvas-container {
+  margin: auto;
 }
 
 #cats .cat button {
+  display: block;
+  height: 50px;
+  margin: auto;
   border: none;
-  background: white;
-  color: tomato;
+  background: pink;
+  color: rgb(68, 0, 68);
+  font-size: 36px;
+  font-family: TCM;
   cursor: pointer;
 }
