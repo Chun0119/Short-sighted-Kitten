@@ -48,6 +48,14 @@ h1 {
   background-color: transparent;
 }
 
+#cats {
+  margin: 0 30px;
+}
+
+#cats .cat {
+  margin-bottom: 30px;
+}
+
 #cats .cat .canvas-container {
   margin: auto;
 }

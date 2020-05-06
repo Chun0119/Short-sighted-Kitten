@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/static/icon.png">
+    <link rel="icon" href="/static/icon.png" />
     <title>Short-sighted Kitten</title>
     <link rel="stylesheet" type="text/css" href="/static/dropzone.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/style.css" />
@@ -62,33 +62,42 @@
         const canvas = new fabric.Canvas(canvasElem);
 
         const button = document.createElement("button");
+        button.innerHTML = "Download";
+        cat.appendChild(button);
 
         fabric.Image.fromURL(url, (img) => {
           const { width, height } = img.getOriginalSize();
           canvas.setWidth(width);
           canvas.setHeight(height);
           canvas.setBackgroundImage(img);
-          button.style.width = width + "px";
 
           for (landmark of landmarks) {
             drawEyeglasses(canvas, landmark);
             drawBubble(canvas, landmark);
           }
-        });
 
-        button.innerHTML = "Download";
-        cat.appendChild(button);
-        button.addEventListener("click", () => {
-          const url = canvas.toDataURL({
-            format: "jpeg",
+          const scale = Math.min(1, container.clientWidth / width);
+
+          canvas.setWidth(width * scale);
+          canvas.setHeight(height * scale);
+          canvas.setZoom(scale);
+          canvas.calcOffset();
+
+          button.style.width = width * scale + "px";
+          button.addEventListener("click", () => {
+            const url = canvas.toDataURL({
+              format: "jpeg",
+              quality: 1,
+              multiplier: 1 / scale,
+            });
+
+            const link = document.createElement("a");
+            link.download = filename;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           });
-
-          const link = document.createElement("a");
-          link.download = filename;
-          link.href = url;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
         });
       }
 
@@ -127,6 +136,7 @@
           .scaleToHeight(height)
           .rotate(angle);
         canvas.add(img);
+        img.moveTo(1);
       }
 
       function drawBubble(canvas, landmarks) {
@@ -158,16 +168,19 @@
           .scaleToWidth(width)
           .scaleToHeight(height);
         canvas.add(img);
+        img.moveTo(2);
 
-        const text = new fabric.Text("Meow", {
+        const text = new fabric.IText("Meow", {
           fontFamily: "TCM",
           fontSize: 30,
+          textAlign: "center",
           left: mouthX + width / 2,
           top: mouthY + height / 2,
           originX: "center",
           originY: "center",
         });
         canvas.add(text);
+        text.moveTo(3);
       }
     </script>
   </body>
