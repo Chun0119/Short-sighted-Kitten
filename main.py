@@ -8,7 +8,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 tf.get_logger().setLevel("ERROR")
 print("Loading Models...")
-IMG_SIZE_FACE = 512
 face_detection_model = tf.keras.models.load_model(
     "models/face_detection_model"
 ).signatures["serving_default"]
@@ -24,9 +23,8 @@ def home():
 
 
 def detect_face(img):
-    img = tf.io.decode_jpeg(img, channels=3)
+    img = tf.io.decode_image(img, channels=3, expand_animations=False)
     shape = tf.shape(img)[:2]  # [height, width]
-    img = tf.image.resize_with_pad(img, IMG_SIZE_FACE, IMG_SIZE_FACE)
     img = tf.cast(img, tf.uint8)
 
     inputs = tf.expand_dims(img, 0)
@@ -41,8 +39,11 @@ def detect_face(img):
     return img, bboxes, shape
 
 
-def detect_landmarks(img, bbox):
-    normalized = tf.constant(bbox) / IMG_SIZE_FACE
+def detect_landmarks(img, shape, bbox):
+    dimensions = tf.reverse(shape, axis=[-1])
+    dimensions = tf.cast(dimensions, tf.float32)
+    normalized = tf.reshape(bbox, [-1, 2]) / dimensions
+    normalized = tf.reshape(normalized, [-1])
     roi = tf.image.crop_and_resize(
         [img],
         [tf.gather(normalized, [1, 0, 3, 2])],  # y0, x0, y1, x1
@@ -59,29 +60,31 @@ def detect_landmarks(img, bbox):
 
 
 def project_landmarks(shape, bbox, landmarks):
+    # project landmarks from IMG_SIZE_LANDMARKS to bbox
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
 
     landmarks = tf.reshape(landmarks, [-1, 2])
     landmarks = landmarks / [IMG_SIZE_LANDMARKS, IMG_SIZE_LANDMARKS] * [width, height]
-    landmarks = landmarks + bbox[:2]
 
-    shape = tf.cast(shape, tf.float32)
-    base = tf.math.reduce_max(shape)
-    edges = (tf.reverse(shape, [-1]) - base) / 2 / base * IMG_SIZE_FACE
-    landmarks = landmarks + edges
+    # shift landmarks wrt bbox in original image
+    landmarks = landmarks + bbox[:2]
 
     landmarks = tf.reshape(landmarks, [-1])
     return landmarks
 
-
-@app.post("/detect")
-def detect(file: UploadFile = File(...)):
-    img, bboxes, shape = detect_face(file.file.read())
-    landmarks = [detect_landmarks(img, bbox) for bbox in bboxes]
+def detect_cat(raw):
+    img, bboxes, shape = detect_face(raw)
+    landmarks = [detect_landmarks(img, shape, bbox) for bbox in bboxes]
     landmarks = [
         project_landmarks(shape, bbox, landmark)
         for landmark, bbox in zip(landmarks, bboxes)
     ]
     landmarks = [landmark.numpy().tolist() for landmark in landmarks]
+    return landmarks
+
+@app.post("/detect")
+def detect(file: UploadFile = File(...)):
+    raw = file.file.read()
+    landmarks = detect_cat(raw)
     return {"success": True, "landmarks": landmarks}
