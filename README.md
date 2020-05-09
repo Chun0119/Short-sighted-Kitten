@@ -2,24 +2,30 @@
 
 Short-Sighted Kitten is an exploration of facial landmarks detection model on cats. It currently contains pre-trained models for cat face ROI detection and facial landmarks detection, as well as a web application serving as a demo, which adds eyeglasses and speech bubbles to the detected cat eyes and mouth.
 
-## Setup
+## Google Colab Server
 
-1. A GPU instance is recommended as the model loading and inference time may be slow on CPU.
+The recommended method to try the web application for demo is Google Colab Server.
 
-2. Install Python 3.6+, preferably via [Anaconda](https://www.anaconda.com/):
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/server.ipynb)
+
+## Local Setup
+
+You can also set up the repo in local environment. A GPU instance is recommended as the model loading and inference time may be slow on CPU. Below are the procedures:
+
+1. Install Python 3.6+, preferably via [Anaconda](https://www.anaconda.com/):
 
 ```shell
 $ python --version
 Python 3.7.6
 ```
 
-3. Install dependencies:
+2. Install dependencies:
 
 ```shell
 $ pip install -r requirements.txt
 ```
 
-4. Download and extracts [pre-trained models](https://drive.google.com/file/d/1ncrxIyUBps_5_iCnYRmRlutCAXrGm4lk/view?usp=sharing) in the project folder:
+3. Download and extracts [pre-trained models](https://drive.google.com/file/d/1ncrxIyUBps_5_iCnYRmRlutCAXrGm4lk/view?usp=sharing) in the project folder:
 
 ```shell
 $ tree -L 2
@@ -30,7 +36,7 @@ $ tree -L 2
 ...
 ```
 
-5. Launch web server:
+4. Launch web server:
 
 ```shell
 $ uvicorn main:app
@@ -54,4 +60,6 @@ $ uvicorn mock:app --reload
 
 ## Model Training
 
-The models are trained in Google Colab using GPUs. Details can be found in the `notebooks` folder.
+The models are trained in Google Colab using GPUs. Relevant notebooks are located in the `notebooks` folder:
+
+- `server.ipynb` describes the procedures to set up the web application on Google Colab.
