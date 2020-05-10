@@ -67,3 +67,8 @@ The models are trained in Google Colab using GPUs. Relevant notebooks are locate
 - `training.ipynb` walks through the training process of the two models [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/training.ipynb)
 - `inference.ipynb` outlines the inference process of the whole pipeline using the saved models, from image to landmarks [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/inference.ipynb)
 - `server.ipynb` describes the procedures to set up the web application on Google Colab [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/server.ipynb)
+
+## Acknowledgements
+
+- [Cat Dataset](https://www.kaggle.com/crawford/cat-dataset)
+- [zylamarek/frederic](https://github.com/zylamarek/frederic)
