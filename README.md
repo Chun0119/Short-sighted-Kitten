@@ -2,9 +2,11 @@
 
 Short-Sighted Kitten is an exploration of facial landmarks detection model on cats. It currently contains pre-trained models for cat face ROI detection and facial landmarks detection, as well as a web application serving as a demo, which adds eyeglasses and speech bubbles to the detected cat eyes and mouth.
 
-## Google Colab Server
+![Screenshot](https://user-images.githubusercontent.com/944420/81476487-c5ab7100-9244-11ea-85c3-29ddf11ee72f.jpg)
 
-The recommended method to try the web application for demo is Google Colab Server.
+## Google Colab
+
+The recommended method to try the web application for demo is Google Colab.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/server.ipynb)
 
@@ -58,8 +60,10 @@ $ uvicorn mock:app --reload
 
 - Launch Chrome Devtools to disable cache
 
-## Model Training
+## Models
 
 The models are trained in Google Colab using GPUs. Relevant notebooks are located in the `notebooks` folder:
 
-- `server.ipynb` describes the procedures to set up the web application on Google Colab.
+- `training.ipynb` walks through the training process of the two models [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/training.ipynb)
+- `inference.ipynb` outlines the inference process of the whole pipeline using the saved models, from image to landmarks [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/inference.ipynb)
+- `server.ipynb` describes the procedures to set up the web application on Google Colab. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Chun0119/Short-sighted-Kitten/blob/master/notebooks/server.ipynb)
