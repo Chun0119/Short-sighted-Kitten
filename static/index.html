@@ -44,15 +44,7 @@
       });
 
       dropzone.on("success", (e, data) => {
-        if (data.success) {
-          if (data.landmarks.length > 0) {
-            drawCat(e.dataURL, e.name, data.landmarks);
-          } else {
-            alert("No cat detected :O");
-          }
-        } else {
-          alert(data.error);
-        }
+        drawCat(e.dataURL, e.name, data.landmarks);
       });
 
       function drawCat(url, filename, landmarks) {

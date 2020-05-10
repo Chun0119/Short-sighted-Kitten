@@ -1,7 +1,8 @@
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, File, UploadFile
 from asyncio import sleep
+
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -28,6 +29,6 @@ async def detect(file: UploadFile = File(...)):
             [1359, 595, 1453, 611, 1380, 666],
         ]
     else:
-        landmarks = []
+        return PlainTextResponse("No cats detected", status_code=400)
 
     return {"success": True, "landmarks": landmarks}

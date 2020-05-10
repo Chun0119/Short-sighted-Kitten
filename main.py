@@ -1,7 +1,7 @@
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, File, UploadFile
 import tensorflow as tf
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -119,7 +119,9 @@ def detect_cat(raw):
     landmarks = [
         project_landmarks(bbox, landmark) for landmark, bbox in zip(landmarks, bboxes)
     ]
-    landmarks = [landmark.numpy().tolist() for landmark in landmarks] # convert tf.Tensor into Python list
+    landmarks = [
+        landmark.numpy().tolist() for landmark in landmarks
+    ]  # convert tf.Tensor into Python list
     return landmarks
 
 
@@ -127,4 +129,7 @@ def detect_cat(raw):
 def detect(file: UploadFile = File(...)):
     raw = file.file.read()
     landmarks = detect_cat(raw)
-    return {"success": True, "landmarks": landmarks}
+    if landmarks:
+        return {"success": True, "landmarks": landmarks}
+    else:
+        return PlainTextResponse("No cats detected", status_code=400)
