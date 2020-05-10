@@ -72,3 +72,5 @@ The models are trained in Google Colab using GPUs. Relevant notebooks are locate
 
 - [Cat Dataset](https://www.kaggle.com/crawford/cat-dataset)
 - [zylamarek/frederic](https://github.com/zylamarek/frederic)
+- [qubvel/efficientnet](https://github.com/qubvel/efficientnet)
+- [automl/efficientdet](https://github.com/google/automl/tree/master/efficientdet)
